@@ -30,6 +30,8 @@ require 'src/states/PlayState'
 -- classes
 require 'src/Paddle'
 require 'src/Ball'
+require 'src/Brick'
 
 -- utils
 require 'src/Util'
+require 'src/LevelMaker'
