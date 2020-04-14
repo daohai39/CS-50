@@ -29,6 +29,7 @@ require 'src/states/PlayState'
 
 -- classes
 require 'src/Paddle'
+require 'src/Ball'
 
 -- utils
 require 'src/Util'
