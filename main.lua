@@ -41,6 +41,11 @@ function love.load()
         ['hearts'] = love.graphics.newImage('graphics/hearts.png'),
         ['particle'] = love.graphics.newImage('graphics/particle.png')
     }
+
+    --init sprites
+    gFrames = {
+        ['paddles'] = GenerateQuadsPaddles(gTextures['main'])
+    }
     --init screen
     push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
         vsync = true,
@@ -49,7 +54,8 @@ function love.load()
     })
     --init state machine
     gStateMachine = StateMachine {
-        ['start'] = function() return StartState() end
+        ['start'] = function() return StartState() end,
+        ['play'] = function() return PlayState() end
     }
     gStateMachine:change('start')
     --init keyboards table
