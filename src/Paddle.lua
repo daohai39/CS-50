@@ -1,7 +1,7 @@
 Paddle = Class{}
 
 function Paddle:init( )
-    self.x = VIRTUAL_WIDTH / 2
+    self.x = VIRTUAL_WIDTH / 2 - 32
     self.y = VIRTUAL_HEIGHT - 32
 
     self.dx = 0

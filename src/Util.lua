@@ -91,7 +91,7 @@ function GenerateQuadsBalls(atlas)
     local x = 96
     local y = 48
 
-    local counter = 0
+    local counter = 1
     local quads = {}
 
     for i = 0, 3 do
@@ -114,4 +114,8 @@ end
 
 function GenerateQuadsBricks(atlas)
     return table.slice(GenerateQuads(atlas, 32, 16), 1, 21)
+end
+
+function GenerateQuadsHearts(atlas)
+    return GenerateQuads(atlas, 10, 9)
 end
