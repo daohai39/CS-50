@@ -40,12 +40,12 @@ function PlayState:update(dt)
         self.ball.dy = -self.ball.dy
 
         -- left side of paddle while moving left
-        if self.ball.x < self.paddle.x + self.paddle.width / 2 and self.ball.dx < 0 then
+        if self.ball.x < self.paddle.x + self.paddle.width / 2 and self.paddle.dx < 0 then
             self.ball.dx = -50 + -(8 * (self.paddle.x + self.paddle.width / 2 - self.ball.x))
         end
 
         -- right side of paddle while moving right
-        if self.ball.x > self.paddle.x + self.paddle.width / 2 and self.ball.dx > 0 then
+        if self.ball.x > self.paddle.x + self.paddle.width / 2 and self.paddle.dx > 0 then
             self.ball.dx = 50 + (8 * math.abs( self.paddle.x + self.paddle.width / 2 - self.ball.x))
         end
 
