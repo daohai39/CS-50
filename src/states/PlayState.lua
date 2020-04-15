@@ -39,13 +39,9 @@ function PlayState:update(dt)
         self.ball.y = self.paddle.y - 8
         self.ball.dy = -self.ball.dy
 
-        -- left side of paddle while moving left
-        if self.ball.x < self.paddle.x + self.paddle.width / 2 and self.paddle.dx < 0 then
+        if self.ball.x < self.paddle.x + self.paddle.width / 2 and self.paddle.dx < 0 then           -- left side of paddle while moving left
             self.ball.dx = -50 + -(8 * (self.paddle.x + self.paddle.width / 2 - self.ball.x))
-        end
-
-        -- right side of paddle while moving right
-        if self.ball.x > self.paddle.x + self.paddle.width / 2 and self.paddle.dx > 0 then
+        elseif self.ball.x > self.paddle.x + self.paddle.width / 2 and self.paddle.dx > 0 then      -- right side of paddle while moving right
             self.ball.dx = 50 + (8 * math.abs( self.paddle.x + self.paddle.width / 2 - self.ball.x))
         end
 
@@ -72,7 +68,7 @@ function PlayState:update(dt)
             else
                 -- trigger bottom-side collisiion
                 self.ball.dy = -self.ball.dy
-                self.ball.dy = brick.y + brick.height
+                self.ball.y = brick.y + brick.height
             end
             self.ball.dy = self.ball.dy * BALL_SPEED_SCALING
 
@@ -96,6 +92,11 @@ function PlayState:update(dt)
             })
         end
     end
+
+    for k, brick in pairs(self.bricks) do
+        brick:update(dt)
+    end
+
     if love.keyboard.wasPressed('escape') then
         love.event.quit()
     end
@@ -107,6 +108,10 @@ function PlayState:render()
     
     for k, brick in pairs(self.bricks) do
         brick:render()
+    end
+
+    for k, brick in pairs(self.bricks) do
+        brick:renderParticles()
     end
 
     renderScore(self.score)

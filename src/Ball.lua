@@ -24,7 +24,7 @@ function Ball:collides(target)
 
     if self.y > target.y + target.height or target.y > self.y + self.height then
         return false
-    end
+    end 
 
     return true
 end
