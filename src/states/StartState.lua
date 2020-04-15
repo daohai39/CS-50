@@ -15,7 +15,8 @@ function StartState:update( dt )
                 paddle = Paddle(1),
                 bricks = LevelMaker.createMap(1),
                 score = 0,
-                health = 3
+                health = 3,
+                level = 1
             })
         end
     end

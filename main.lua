@@ -60,7 +60,8 @@ function love.load()
         ['start'] = function() return StartState() end,
         ['play'] = function() return PlayState() end,
         ['serve'] = function() return ServeState() end,
-        ['game-over'] = function() return GameOverState() end
+        ['game-over'] = function() return GameOverState() end,
+        ['victory'] = function () return VictoryState() end
     }
     gStateMachine:change('start')
     --init keyboards table
