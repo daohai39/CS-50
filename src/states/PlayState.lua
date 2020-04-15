@@ -54,6 +54,9 @@ function PlayState:update(dt)
 
     for k, brick in pairs(self.bricks) do
         if brick.inPlay and self.ball:collides(brick) then
+            --update score
+            self.score = self.score + (brick.tier * 200 + brick.color * 25)
+
             if self.ball.x + 2 < brick.x and self.ball.dx > 0 then
                 -- trigger left-side collision
                 self.ball.dx = -self.ball.dx
@@ -72,10 +75,8 @@ function PlayState:update(dt)
                 self.ball.dy = brick.y + brick.height
             end
             self.ball.dy = self.ball.dy * BALL_SPEED_SCALING
-            brick:hit()
 
-            --update score
-            self.score = self.score + 10
+            brick:hit()
         end
     end
 
