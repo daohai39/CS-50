@@ -28,6 +28,7 @@ require 'src/states/PlayState'
 require 'src/states/ServeState'
 require 'src/states/GameOverState'
 require 'src/states/VictoryState'
+require 'src/states/HighScoreState'
 
 
 -- classes
