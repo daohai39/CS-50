@@ -119,3 +119,7 @@ end
 function GenerateQuadsHearts(atlas)
     return GenerateQuads(atlas, 10, 9)
 end
+
+function GenerateQuadsArrows(atlas)
+    return GenerateQuads(atlas, 24, 24)
+end 

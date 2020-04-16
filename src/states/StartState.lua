@@ -15,13 +15,8 @@ function StartState:update( dt )
     if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') then
         gSounds['confirm']:play()
         if highlighted == 1 then
-            gStateMachine:change('serve', {
-                paddle = Paddle(1),
-                bricks = LevelMaker.createMap(1),
-                score = 0,
-                highScores = self.highScores,
-                health = 3,
-                level = 1
+            gStateMachine:change('paddle-select', {
+                highScores = self.highScores
             })
         else 
             gStateMachine:change('high-score', {
