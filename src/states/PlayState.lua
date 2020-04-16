@@ -13,6 +13,7 @@ function PlayState:enter(params)
     self.score = params.score
     self.health = params.health
     self.level = params.level
+    self.highScores = params.highScores
 
     self.ball.dx = math.random(-400, 400)
     self.ball.dy = math.random(-50, -60)
@@ -62,7 +63,8 @@ function PlayState:update(dt)
                     paddle = self.paddle,
                     health = self.health,
                     score = self.score,
-                    ball = self.ball
+                    ball = self.ball,
+                    highScores = self.highScores
                 })
             end
 
@@ -83,7 +85,10 @@ function PlayState:update(dt)
                 self.ball.dy = -self.ball.dy
                 self.ball.y = brick.y + brick.height
             end
-            self.ball.dy = self.ball.dy * BALL_SPEED_SCALING
+            -- slightly scale the y velocity to speed up the game, capping at +- 150
+            if math.abs(self.ball.dy) < 150 then
+                self.ball.dy = self.ball.dy * BALL_SPEED_SCALING
+            end
         end
     end
 
@@ -94,12 +99,15 @@ function PlayState:update(dt)
             gStateMachine:change('serve', {
                 paddle = self.paddle,
                 bricks = self.bricks,
+                level = self.level,
                 score = self.score,
-                health = self.health
+                health = self.health,
+                highScores = self.highScores
             })
         else
             gStateMachine:change('game-over', {
-                score = self.score
+                score = self.score,
+                highScores = self.highScores
             })
         end
     end
