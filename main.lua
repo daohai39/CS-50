@@ -70,6 +70,10 @@ function love.load()
     gStateMachine:change('start', {
         highScores = loadHighScores()
     })
+
+    gSounds['music']:play()
+    gSounds['music']:setLooping(true)
+    
     --init keyboards table
     love.keyboard.keysPressed = {}
 end
