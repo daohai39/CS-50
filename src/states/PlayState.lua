@@ -4,6 +4,8 @@ local BALL_SPEED_SCALING = 1.02
 
 function PlayState:init( )
     self.paused = false
+    self.powerUps = {}
+    self.extraBalls = {}
 end
 
 function PlayState:enter(params)
@@ -14,9 +16,25 @@ function PlayState:enter(params)
     self.health = params.health
     self.level = params.level
     self.highScores = params.highScores
-
+    self.bricksTillPowerup = 0
+    
     self.ball.dx = math.random(-400, 400)
     self.ball.dy = math.random(-50, -60)
+end
+
+function PlayState:onBallCollideWithPaddle(ball)
+    -- raise the ball above the paddle in case it go below it
+    -- then reverse dy
+    ball.y = self.paddle.y - ball.height
+    ball.dy = -ball.dy
+
+    if ball.x < self.paddle.x + self.paddle.width / 2 and self.paddle.dx < 0 then           -- left side of paddle while moving left
+        ball.dx = -50 + -(8 * (self.paddle.x + self.paddle.width / 2 - ball.x))
+    elseif ball.x > self.paddle.x + self.paddle.width / 2 and self.paddle.dx > 0 then      -- right side of paddle while moving right
+        ball.dx = 50 + (8 * math.abs( self.paddle.x + self.paddle.width / 2 - ball.x))
+    end
+
+    gSounds['paddle-hit']:play()
 end
 
 function PlayState:update(dt)
@@ -34,20 +52,46 @@ function PlayState:update(dt)
 
     self.paddle:update(dt)
     self.ball:update(dt)
+ 
+    for i = 1, #self.powerUps do
+        self.powerUps[i]:update(dt)
+    end
+
+    for i = 1, #self.extraBalls do
+        self.extraBalls[i]:update(dt)
+    end
+
+    for i = 1, #self.powerUps do
+        if (self.powerUps[i]:collides(self.paddle)) and self.powerUps[i].inPlay then
+            gSounds['select']:play()
+            self.powerUps[i]:earned()
+            local ball1 = Ball(self.ball.skin)
+            local ball2 = Ball(self.ball.skin)
+            ball1.x = self.paddle.x + self.paddle.width / 2
+            ball1.y = self.paddle.y - ball1.height
+            ball1.dx = math.random(-400, 400)
+            ball1.dy = math.random(-50, -60)
+            ball2.x = self.paddle.x + self.paddle.width / 2
+            ball2.y = self.paddle.y - ball2.height
+            ball2.dx = math.random(-400, 400)
+            ball2.dy = math.random(-50, -60)
+            self.extraBalls[#self.extraBalls + 1] = ball1
+            self.extraBalls[#self.extraBalls + 1] = ball2
+        end
+    end
+    
 
     if self.ball:collides(self.paddle) then
-        -- raise the ball above the paddle in case it go below it
-        -- then reverse dy
-        self.ball.y = self.paddle.y - 8
-        self.ball.dy = -self.ball.dy
+       self:onBallCollideWithPaddle(self.ball)
+    end
 
-        if self.ball.x < self.paddle.x + self.paddle.width / 2 and self.paddle.dx < 0 then           -- left side of paddle while moving left
-            self.ball.dx = -50 + -(8 * (self.paddle.x + self.paddle.width / 2 - self.ball.x))
-        elseif self.ball.x > self.paddle.x + self.paddle.width / 2 and self.paddle.dx > 0 then      -- right side of paddle while moving right
-            self.ball.dx = 50 + (8 * math.abs( self.paddle.x + self.paddle.width / 2 - self.ball.x))
+    for i = 1, #self.extraBalls do
+        if not self.extraBalls.inPlay then
+            ::continue::
         end
-
-        gSounds['paddle-hit']:play()
+        if self.extraBalls[i]:collides(self.paddle) then
+            self:onBallCollideWithPaddle(self.extraBalls[i])
+        end
     end
 
     for k, brick in pairs(self.bricks) do
@@ -56,6 +100,13 @@ function PlayState:update(dt)
             self.score = self.score + (brick.tier * 200 + brick.color * 25)
 
             brick:hit()
+            if self.bricksTillPowerup > 0 then
+                self.bricksTillPowerup = self.bricksTillPowerup - 1
+            elseif self.bricksTillPowerup <= 0 then
+                self.bricksTillPowerup = math.random( 2, 5 )
+                self.powerUps[#self.powerUps + 1] = Powerup(brick.x + brick.width / 2, brick.y + brick.height + 8)
+                gSounds['recover']:play()
+            end
 
             if self:checkVictory() then
                 gStateMachine:change('victory', {
@@ -112,6 +163,7 @@ function PlayState:update(dt)
         end
     end
 
+    -- for rendering particle
     for k, brick in pairs(self.bricks) do
         brick:update(dt)
     end
@@ -131,6 +183,14 @@ function PlayState:render()
 
     for k, brick in pairs(self.bricks) do
         brick:renderParticles()
+    end
+
+    for i = 1, #self.powerUps do
+        self.powerUps[i]:render()
+    end
+
+    for i = 1, #self.extraBalls do
+        self.extraBalls[i]:render()
     end
 
     renderScore(self.score)

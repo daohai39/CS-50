@@ -39,7 +39,7 @@ function love.load()
         ['main'] = love.graphics.newImage('graphics/breakout.png'),
         ['arrows'] = love.graphics.newImage('graphics/arrows.png'),
         ['hearts'] = love.graphics.newImage('graphics/hearts.png'),
-        ['particle'] = love.graphics.newImage('graphics/particle.png')
+        ['particle'] = love.graphics.newImage('graphics/particle.png'),
     }
 
     --init sprites
@@ -48,7 +48,8 @@ function love.load()
         ['balls'] = GenerateQuadsBalls(gTextures['main']),
         ['bricks'] = GenerateQuadsBricks(gTextures['main']),
         ['hearts'] = GenerateQuadsHearts(gTextures['hearts']),
-        ['arrows'] = GenerateQuadsArrows(gTextures['arrows'])
+        ['arrows'] = GenerateQuadsArrows(gTextures['arrows']),
+        ['power-ups'] = GenerateQuadsPowerUps(gTextures['main'])
     }
     --init screen
     push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
@@ -73,7 +74,7 @@ function love.load()
 
     gSounds['music']:play()
     gSounds['music']:setLooping(true)
-    
+
     --init keyboards table
     love.keyboard.keysPressed = {}
 end

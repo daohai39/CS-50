@@ -123,3 +123,7 @@ end
 function GenerateQuadsArrows(atlas)
     return GenerateQuads(atlas, 24, 24)
 end 
+
+function GenerateQuadsPowerUps(atlas)
+    return table.slice(GenerateQuads(atlas, 16 , 16), 145, 154)
+end

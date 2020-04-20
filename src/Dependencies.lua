@@ -37,6 +37,7 @@ require 'src/states/PaddleSelectState'
 require 'src/Paddle'
 require 'src/Ball'
 require 'src/Brick'
+require 'src/Powerup'
 
 -- utils
 require 'src/Util'
