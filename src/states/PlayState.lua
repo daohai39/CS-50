@@ -16,8 +16,10 @@ function PlayState:enter(params)
     self.health = params.health
     self.level = params.level
     self.highScores = params.highScores
-    self.bricksTillPowerup = 0
     
+    self.bricksTillPowerup = 0
+    self.recoverPoints = 5000
+
     self.ball.dx = math.random(-200, 200)
     self.ball.dy = math.random(-50, -60)
 end
@@ -74,6 +76,18 @@ function PlayState:checkAndHandleCollideWithBrick(ball, brick)
     self.score = self.score + (brick.tier * 200 + brick.color * 25)
 
     brick:hit()
+     -- if we have enough points, recover a point of health
+     if self.score > self.recoverPoints then
+        -- can't go above 3 health
+        self.health = math.min(3, self.health + 1)
+
+        -- multiply recover points by 2
+        self.recoverPoints = math.min(100000, self.recoverPoints * 2)
+
+        -- play recover sound effect
+        gSounds['recover']:play()
+    end
+    
     if self.bricksTillPowerup > 0 then
         self.bricksTillPowerup = self.bricksTillPowerup - 1
     elseif self.bricksTillPowerup <= 0 then
