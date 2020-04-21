@@ -18,7 +18,7 @@ function PlayState:enter(params)
     self.highScores = params.highScores
     
     self.bricksTillPowerup = 0
-    self.recoverPoints = 5000
+    self.recoverPoints = 800
 
     self.ball.dx = math.random(-200, 200)
     self.ball.dy = math.random(-50, -60)
@@ -86,8 +86,12 @@ function PlayState:checkAndHandleCollideWithBrick(ball, brick)
 
         -- play recover sound effect
         gSounds['recover']:play()
+
+        -- grow paddle
+
+        self.paddle:grows()
     end
-    
+
     if self.bricksTillPowerup > 0 then
         self.bricksTillPowerup = self.bricksTillPowerup - 1
     elseif self.bricksTillPowerup <= 0 then
@@ -190,6 +194,7 @@ function PlayState:update(dt)
             table.remove(self.extraBalls, ballIndex)
         else
             self.health = self.health - 1
+            self.paddle:shrinks()
             gSounds['hurt']:play()
             if self.health > 0 then
                 gStateMachine:change('serve', {
