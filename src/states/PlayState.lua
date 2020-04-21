@@ -18,8 +18,17 @@ function PlayState:enter(params)
     self.highScores = params.highScores
     self.bricksTillPowerup = 0
     
-    self.ball.dx = math.random(-400, 400)
+    self.ball.dx = math.random(-200, 200)
     self.ball.dy = math.random(-50, -60)
+end
+
+function PlayState:spawnNewBallAt(x, y)
+    local tempBall = Ball(self.ball.skin)
+    tempBall.x = x
+    tempBall.y = y
+    tempBall.dx = math.random(-200, 200)
+    tempBall.dy = math.random(-50, -60)
+    return tempBall
 end
 
 function PlayState:onBallCollideWithPaddle(ball)
@@ -35,6 +44,56 @@ function PlayState:onBallCollideWithPaddle(ball)
     end
 
     gSounds['paddle-hit']:play()
+end
+
+function PlayState:checkCollideWithBrickAndMoveBall(ball, brick)
+    if ball.x + 2 < brick.x and ball.dx > 0 then
+        -- trigger left-side collision
+        ball.dx = -ball.dx
+        ball.x = brick.x - ball.width
+    elseif ball.x + 6  > brick.x + brick.width and ball.dx < 0 then
+        -- trigger right-side collision
+        ball.dx = -ball.dx
+        ball.x = brick.x + brick.width
+    elseif ball.y < brick.y then
+        -- trigger top-side collision
+        ball.dy = -ball.dy
+        ball.y = brick.y - ball.height
+    else
+        -- trigger bottom-side collisiion
+        ball.dy = -ball.dy
+        ball.y = brick.y + brick.height
+    end
+    -- slightly scale the y velocity to speed up the game, capping at +- 150
+    if math.abs(ball.dy) < 150 then
+        ball.dy = ball.dy * BALL_SPEED_SCALING
+    end
+end
+
+function PlayState:checkAndHandleCollideWithBrick(ball, brick)
+    self.score = self.score + (brick.tier * 200 + brick.color * 25)
+
+    brick:hit()
+    if self.bricksTillPowerup > 0 then
+        self.bricksTillPowerup = self.bricksTillPowerup - 1
+    elseif self.bricksTillPowerup <= 0 then
+        self.bricksTillPowerup = math.random( 10, 20 )
+        self.powerUps[#self.powerUps + 1] = Powerup(brick.x + brick.width / 2, brick.y + brick.height + 8)
+        gSounds['recover']:play()
+    end
+
+    if self:checkVictory() then
+        gStateMachine:change('victory', {
+            level = self.level,
+            paddle = self.paddle,
+            health = self.health,
+            score = self.score,
+            ball = self.ball,
+            highScores = self.highScores
+        })
+    end
+
+    self:checkCollideWithBrickAndMoveBall(ball, brick)
 end
 
 function PlayState:update(dt)
@@ -64,19 +123,9 @@ function PlayState:update(dt)
     for i = 1, #self.powerUps do
         if (self.powerUps[i]:collides(self.paddle)) and self.powerUps[i].inPlay then
             gSounds['select']:play()
-            self.powerUps[i]:earned()
-            local ball1 = Ball(self.ball.skin)
-            local ball2 = Ball(self.ball.skin)
-            ball1.x = self.paddle.x + self.paddle.width / 2
-            ball1.y = self.paddle.y - ball1.height
-            ball1.dx = math.random(-400, 400)
-            ball1.dy = math.random(-50, -60)
-            ball2.x = self.paddle.x + self.paddle.width / 2
-            ball2.y = self.paddle.y - ball2.height
-            ball2.dx = math.random(-400, 400)
-            ball2.dy = math.random(-50, -60)
-            self.extraBalls[#self.extraBalls + 1] = ball1
-            self.extraBalls[#self.extraBalls + 1] = ball2
+            self.powerUps[i]:useAbility()
+            table.insert( self.extraBalls, self:spawnNewBallAt(self.paddle.x + self.paddle.width / 2, self.paddle.y - 8) )
+            table.insert( self.extraBalls, self:spawnNewBallAt(self.paddle.x + self.paddle.width / 2, self.paddle.y - 8) )
         end
     end
     
@@ -86,7 +135,7 @@ function PlayState:update(dt)
     end
 
     for i = 1, #self.extraBalls do
-        if not self.extraBalls.inPlay then
+        if not self.extraBalls[i].inPlay then
             ::continue::
         end
         if self.extraBalls[i]:collides(self.paddle) then
@@ -96,70 +145,53 @@ function PlayState:update(dt)
 
     for k, brick in pairs(self.bricks) do
         if brick.inPlay and self.ball:collides(brick) then
-            --update score
-            self.score = self.score + (brick.tier * 200 + brick.color * 25)
-
-            brick:hit()
-            if self.bricksTillPowerup > 0 then
-                self.bricksTillPowerup = self.bricksTillPowerup - 1
-            elseif self.bricksTillPowerup <= 0 then
-                self.bricksTillPowerup = math.random( 2, 5 )
-                self.powerUps[#self.powerUps + 1] = Powerup(brick.x + brick.width / 2, brick.y + brick.height + 8)
-                gSounds['recover']:play()
+            self:checkAndHandleCollideWithBrick(self.ball, brick)
+        end
+        for i = 1, #self.extraBalls do
+            if not self.extraBalls[i].inPlay then
+                ::continue::
             end
-
-            if self:checkVictory() then
-                gStateMachine:change('victory', {
-                    level = self.level,
-                    paddle = self.paddle,
-                    health = self.health,
-                    score = self.score,
-                    ball = self.ball,
-                    highScores = self.highScores
-                })
-            end
-
-            if self.ball.x + 2 < brick.x and self.ball.dx > 0 then
-                -- trigger left-side collision
-                self.ball.dx = -self.ball.dx
-                self.ball.x = brick.x - self.ball.width
-            elseif self.ball.x + 6  > brick.x + brick.width and self.ball.x < 0 then
-                -- trigger right-side collision
-                self.ball.dx = -self.ball.dx
-                self.ball.x = brick.x + brick.width
-            elseif self.ball.y < brick.y then
-                -- trigger top-side collision
-                self.ball.dy = -self.ball.dy
-                self.ball.y = brick.y - self.ball.height
-            else
-                -- trigger bottom-side collisiion
-                self.ball.dy = -self.ball.dy
-                self.ball.y = brick.y + brick.height
-            end
-            -- slightly scale the y velocity to speed up the game, capping at +- 150
-            if math.abs(self.ball.dy) < 150 then
-                self.ball.dy = self.ball.dy * BALL_SPEED_SCALING
+            if brick.inPlay and self.extraBalls[i]:collides(brick) then
+                self:checkAndHandleCollideWithBrick(self.extraBalls[i], brick)
             end
         end
     end
 
+    local removeIndexes = {}
+
+    for i = 1, #self.extraBalls do
+        if self.extraBalls[i].y >= VIRTUAL_HEIGHT then
+            table.insert(removeIndexes, i)
+        end
+    end
+
+    for i = 1, #removeIndexes do
+        table.remove( self.extraBalls, removeIndexes[i] )
+    end
+
     if self.ball.y >= VIRTUAL_HEIGHT then 
-        self.health = self.health - 1
-        gSounds['hurt']:play()
-        if self.health > 0 then
-            gStateMachine:change('serve', {
-                paddle = self.paddle,
-                bricks = self.bricks,
-                level = self.level,
-                score = self.score,
-                health = self.health,
-                highScores = self.highScores
-            })
+        if #self.extraBalls > 0 then
+            local ballIndex = math.random( 1, #self.extraBalls )
+            self.ball = self.extraBalls[ballIndex]
+            table.remove(self.extraBalls, ballIndex)
         else
-            gStateMachine:change('game-over', {
-                score = self.score,
-                highScores = self.highScores
-            })
+            self.health = self.health - 1
+            gSounds['hurt']:play()
+            if self.health > 0 then
+                gStateMachine:change('serve', {
+                    paddle = self.paddle,
+                    bricks = self.bricks,
+                    level = self.level,
+                    score = self.score,
+                    health = self.health,
+                    highScores = self.highScores
+                })
+            else
+                gStateMachine:change('game-over', {
+                    score = self.score,
+                    highScores = self.highScores
+                })
+            end
         end
     end
 

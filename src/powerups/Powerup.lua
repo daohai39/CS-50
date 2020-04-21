@@ -24,7 +24,7 @@ function Powerup:collides(paddle)
     return true
 end
 
-function Powerup:earned()
+function Powerup:useAbility()
     self.inPlay = false
 end
 
