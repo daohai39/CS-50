@@ -36,6 +36,8 @@ function LevelMaker.createMap(level)
         local solidColor = math.random( 1,highestColor )
         local solidTier = math.random( 0,highestTier )
 
+        local lockFlag = level % 10 == 0 and true or false
+
         for x = 1, numCols do
             if skipFlag and skipPattern then
                 skipFlag = not skipFlag
@@ -59,6 +61,13 @@ function LevelMaker.createMap(level)
                 b.color = solidColor
                 b.tier = solidTier
             end
+
+            if lockFlag then
+                b.tier = 1
+                b.color = 6
+                b.locked = lockFlag
+            end
+
             table.insert(bricks, b)
             ::continue::
         end

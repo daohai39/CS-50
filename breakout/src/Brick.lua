@@ -37,6 +37,7 @@ paletteColors = {
 function Brick:init( x, y )
     self.x = x
     self.y = y
+    self.locked = false
 
     self.tier = 0
     self.color = 1
@@ -53,7 +54,17 @@ function Brick:init( x, y )
     self.psystem:setEmissionArea('normal', 10, 10)
 end
 
+function Brick:unlock()
+    if self.locked then
+        self.locked = false
+    end
+end
+
 function Brick:hit()
+    if self.locked then
+        return
+    end
+
     self.psystem:setColors(
         paletteColors[self.color].r,
         paletteColors[self.color].g,
